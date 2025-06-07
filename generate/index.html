@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Mockup - Mokify</title>
+    <link rel="icon" href="https://mokify.vercel.app/assets/favicon.ico" type="image/x-icon" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="assets/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">Mokify</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Home link - desktop -->
+                    <a href="#" class="hidden md:flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors home-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="text-current">
+                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                                <path d="M5 12H3l9-9l9 9h-2M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>
+                                <path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/>
+                            </g>
+                        </svg>
+                        <span class="font-medium">Back to Home</span>
+                    </a>
+                    
+                    <!-- Home icon only - mobile -->
+                    <a href="#" class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="text-current">
+                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                                <path d="M5 12H3l9-9l9 9h-2M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>
+                                <path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/>
+                            </g>
+                        </svg>
+                    </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button id="mobileMenuBtn" class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                    <div id="previewContainer" class="min-h-96 flex items-center justify-center">
+                        <div class="text-center text-gray-500">
+                            <div class="text-6xl mb-4">🖼️</div>
+                            <h3 class="text-lg font-medium mb-2">Upload screenshots to see preview</h3>
+                            <p class="text-sm">Support for desktop and mobile screenshots</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar (Desktop) -->
+        <aside class="hidden md:block w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">
+            <div id="sidebarContent">
+                <!-- Sidebar content will be populated by JavaScript -->
+            </div>
+        </aside>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 z-40 hidden">
+        <div class="fixed inset-0 bg-black bg-opacity-50"></div>
+        <div id="mobileSidebar" class="fixed right-0 top-0 h-full w-80 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-semibold">Settings</h2>
+                    <button id="closeMobileMenu" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="mobileSidebarContent">
+                    <!-- Mobile sidebar content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MockupGenerator {
+            constructor() {
+                this.settings = {
+                    deviceType: 'both',
+                    desktopImage: null,
+                    mobileImage: null,
+                    theme: 'light',
+                    shadow: 'medium',
+                    backgroundColor: '#d2d2d2',
+                    roundedEdge: true,
+                    verticalPadding: 75,
+                    horizontalPadding: 100
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.renderSidebar();
+                this.bindEvents();
+                this.updatePreview();
+            }
+            
+            renderSidebar() {
+                const sidebarHTML = `
+                    <!-- Device Type -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Device</label>
+                        <select id="deviceType" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="both">Desktop + Mobile</option>
+                            <option value="desktop">Desktop Only</option>
+                            <option value="mobile">Mobile Only</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Image Upload -->
+                    <div class="mb-6" id="imageUploadSection">
+                        <!-- Dynamic content based on device type -->
+                    </div>
+                    
+                    <!-- Rounded Edge -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-medium text-gray-700">Rounded Edge</label>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="roundedEdge" class="sr-only peer" checked>
+                                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Theme -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Theme</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="theme" value="light" checked class="text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">Light</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="theme" value="dark" class="text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">Dark</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Shadow -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Shadow</label>
+                        <select id="shadow" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="none">None</option>
+                            <option value="soft">Soft</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="strong">Strong</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Background -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Background</label>
+                        <div class="flex space-x-2">
+                            <input type="color" id="backgroundColor" value="#d2d2d2" class="w-16 h-10 border border-gray-300 rounded">
+                            <input type="text" id="backgroundHex" value="#d2d2d2" class="flex-1 p-2 border border-gray-300 rounded-md text-sm font-mono">
+                        </div>
+                    </div>
+                    
+                    <!-- Padding -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Padding</label>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs text-gray-600">Vertical</span>
+                                    <span class="text-xs text-gray-600" id="verticalValue">75px</span>
+                                </div>
+                                <input type="range" id="verticalPadding" min="0" max="100" value="75" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs text-gray-600">Horizontal</span>
+                                    <span class="text-xs text-gray-600" id="horizontalValue">100px</span>
+                                </div>
+                                <input type="range" id="horizontalPadding" min="0" max="150" value="100" class="w-full">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Download -->
+                    <button id="downloadBtn" disabled class="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
+                        Download Mockup
+                    </button>
+                `;
+                
+                document.getElementById('sidebarContent').innerHTML = sidebarHTML;
+                document.getElementById('mobileSidebarContent').innerHTML = sidebarHTML;
+                
+                this.renderImageUpload();
+            }
+            
+            renderImageUpload() {
+                const deviceType = this.settings.deviceType;
+                let uploadHTML = '';
+                
+                if (deviceType === 'both') {
+                    uploadHTML = `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Desktop Screenshot</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer" onclick="document.getElementById('desktopFile').click()">
+                                    <div class="text-gray-400 mb-2">📷</div>
+                                    <p class="text-sm text-gray-600">Click to upload desktop image</p>
+                                    <input type="file" id="desktopFile" accept="image/*" class="hidden">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Screenshot</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer" onclick="document.getElementById('mobileFile').click()">
+                                    <div class="text-gray-400 mb-2">📱</div>
+                                    <p class="text-sm text-gray-600">Click to upload mobile image</p>
+                                    <input type="file" id="mobileFile" accept="image/*" class="hidden">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const label = deviceType === 'desktop' ? 'Desktop Screenshot' : 'Mobile Screenshot';
+                    const icon = deviceType === 'desktop' ? '📷' : '📱';
+                    uploadHTML = `
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">${label}</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer" onclick="document.getElementById('singleFile').click()">
+                                <div class="text-gray-400 mb-2">${icon}</div>
+                                <p class="text-sm text-gray-600">Click to upload image</p>
+                                <input type="file" id="singleFile" accept="image/*" class="hidden">
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                const uploadSections = document.querySelectorAll('#imageUploadSection');
+                uploadSections.forEach(section => {
+                    section.innerHTML = uploadHTML;
+                });
+                
+                this.bindFileEvents();
+            }
+            
+            bindEvents() {
+                // Mobile menu
+                document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                    const overlay = document.getElementById('mobileOverlay');
+                    const sidebar = document.getElementById('mobileSidebar');
+                    overlay.classList.remove('hidden');
+                    setTimeout(() => {
+                        sidebar.classList.remove('translate-x-full');
+                    }, 10);
+                });
+                
+                document.getElementById('closeMobileMenu').addEventListener('click', this.closeMobileMenu.bind(this));
+                document.getElementById('mobileOverlay').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) {
+                        this.closeMobileMenu();
+                    }
+                });
+                
+                // Settings
+                document.addEventListener('change', (e) => {
+                    if (e.target.id === 'deviceType') {
+                        this.settings.deviceType = e.target.value;
+                        this.renderImageUpload();
+                        this.updatePreview();
+                    } else if (e.target.name === 'theme') {
+                        this.settings.theme = e.target.value;
+                        this.updatePreview();
+                    } else if (e.target.id === 'shadow') {
+                        this.settings.shadow = e.target.value;
+                        this.updatePreview();
+                    } else if (e.target.id === 'roundedEdge') {
+                        this.settings.roundedEdge = e.target.checked;
+                        this.updatePreview();
+                    } else if (e.target.id === 'backgroundColor') {
+                        this.settings.backgroundColor = e.target.value;
+                        document.getElementById('backgroundHex').value = e.target.value;
+                        this.updatePreview();
+                    } else if (e.target.id === 'backgroundHex') {
+                        if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                            this.settings.backgroundColor = e.target.value;
+                            document.getElementById('backgroundColor').value = e.target.value;
+                            this.updatePreview();
+                        }
+                    }
+                });
+                
+                document.addEventListener('input', (e) => {
+                    if (e.target.id === 'verticalPadding') {
+                        this.settings.verticalPadding = parseInt(e.target.value);
+                        document.getElementById('verticalValue').textContent = e.target.value + 'px';
+                        this.updatePreview();
+                    } else if (e.target.id === 'horizontalPadding') {
+                        this.settings.horizontalPadding = parseInt(e.target.value);
+                        document.getElementById('horizontalValue').textContent = e.target.value + 'px';
+                        this.updatePreview();
+                    }
+                });
+                
+                document.getElementById('downloadBtn').addEventListener('click', this.downloadMockup.bind(this));
+            }
+            
+            closeMobileMenu() {
+                const overlay = document.getElementById('mobileOverlay');
+                const sidebar = document.getElementById('mobileSidebar');
+                sidebar.classList.add('translate-x-full');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
+            }
+            
+            bindFileEvents() {
+                const desktopFile = document.getElementById('desktopFile');
+                const mobileFile = document.getElementById('mobileFile');
+                const singleFile = document.getElementById('singleFile');
+                
+                if (desktopFile) {
+                    desktopFile.addEventListener('change', (e) => this.handleFileUpload(e, 'desktop'));
+                }
+                if (mobileFile) {
+                    mobileFile.addEventListener('change', (e) => this.handleFileUpload(e, 'mobile'));
+                }
+                if (singleFile) {
+                    singleFile.addEventListener('change', (e) => this.handleFileUpload(e, 'single'));
+                }
+            }
+            
+            handleFileUpload(event, type) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (type === 'desktop') {
+                        this.settings.desktopImage = e.target.result;
+                    } else if (type === 'mobile') {
+                        this.settings.mobileImage = e.target.result;
+                    } else if (type === 'single') {
+                        if (this.settings.deviceType === 'desktop') {
+                            this.settings.desktopImage = e.target.result;
+                        } else {
+                            this.settings.mobileImage = e.target.result;
+                        }
+                    }
+                    this.updatePreview();
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            updatePreview() {
+                const container = document.getElementById('previewContainer');
+                const hasImages = this.settings.desktopImage || this.settings.mobileImage;
+                
+                if (!hasImages) {
+                    container.innerHTML = `
+                        <div class="text-center text-gray-500">
+                            <div class="text-6xl mb-4">🖼️</div>
+                            <h3 class="text-lg font-medium mb-2">Upload screenshots to see preview</h3>
+                            <p class="text-sm">Support for desktop and mobile screenshots</p>
+                        </div>
+                    `;
+                    document.getElementById('downloadBtn').disabled = true;
+                    return;
+                }
+                
+                let mockupHTML = '';
+                const { deviceType, theme, shadow, backgroundColor, roundedEdge, verticalPadding, horizontalPadding } = this.settings;
+                
+                const canvasStyle = `
+                    background-color: ${backgroundColor};
+                    padding: ${verticalPadding}px ${horizontalPadding}px;
+                    border-radius: 2px;
+                    display: inline-block;
+                `;
+                
+                const mockupClass = `device-mockup shadow-${shadow} ${roundedEdge ? '' : 'no-rounded'}`;
+                
+                if (deviceType === 'both' && this.settings.desktopImage && this.settings.mobileImage) {
+                    mockupHTML = `
+                        <div class="mockup-canvas" style="${canvasStyle}">
+                            <div class="flex items-end justify-center gap-12">
+                                <div class="${mockupClass} desktop-frame ${theme}-theme">
+                                    <div class="desktop-titlebar">
+                                        <div class="desktop-button close"></div>
+                                        <div class="desktop-button minimize"></div>
+                                        <div class="desktop-button maximize"></div>
+                                    </div>
+                                    <img src="${this.settings.desktopImage}" class="device-screen" style="max-width: 500px; height: auto;" alt="Desktop mockup">
+                                </div>
+                                <div class="${mockupClass} mobile-frame" style="max-height: 75%;">
+                                    <div class="mobile-screen">
+                                        <img src="${this.settings.mobileImage}" class="device-screen" style="max-width: 250px; height: auto;" alt="Mobile mockup">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (deviceType === 'desktop' && this.settings.desktopImage) {
+                    mockupHTML = `
+                        <div class="mockup-canvas" style="${canvasStyle}">
+                            <div class="${mockupClass} desktop-frame ${theme}-theme">
+                                <div class="desktop-titlebar">
+                                    <div class="desktop-button close"></div>
+                                    <div class="desktop-button minimize"></div>
+                                    <div class="desktop-button maximize"></div>
+                                </div>
+                                <img src="${this.settings.desktopImage}" class="device-screen" style="max-width: 800px; height: auto;" alt="Desktop mockup">
+                            </div>
+                        </div>
+                    `;
+                } else if (deviceType === 'mobile' && this.settings.mobileImage) {
+                    mockupHTML = `
+                        <div class="mockup-canvas" style="${canvasStyle}">
+                            <div class="${mockupClass} mobile-frame">
+                                <div class="mobile-screen">
+                                    <img src="${this.settings.mobileImage}" class="device-screen" style="max-width: 300px; height: auto;" alt="Mobile mockup">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = mockupHTML;
+                document.getElementById('downloadBtn').disabled = false;
+            }
+            
+            async downloadMockup() {
+                const element = document.getElementById('previewContainer');
+                try {
+                    const canvas = await html2canvas(element, {
+                        backgroundColor: null,
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.download = 'mockup.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                } catch (error) {
+                    console.error('Error generating mockup:', error);
+                    alert('Error generating mockup. Please try again.');
+                }
+            }
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            new MockupGenerator();
+        });
+    </script>
+</body>
+</html>
